@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jigsaw Ransomware — Anatomy of a Ransomware Attack</title>
+<meta name="description" content="A forensic case study tracing the Jigsaw ransomware from first suspicious executable to recovered files.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="scanline"></div>
+<div class="vignette"></div>
+<nav class="case-thread" id="caseThread" aria-hidden="true"></nav>
+
+<!-- ============================== HERO ============================== -->
+<header class="hero" id="hero">
+  <div class="hero__mask" id="heroMask" aria-hidden="true">
+    <!-- Original abstract mark — a fractured triangular ident, not a
+         reproduction of any copyrighted character design. -->
+    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="maskGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#a8182f" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#0a0c10" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g id="maskShards" fill="none" stroke="url(#maskGrad)" stroke-width="1.2">
+        <path d="M200 40 L330 300 L200 250 L70 300 Z"/>
+        <path d="M200 40 L260 190 L200 250 L140 190 Z"/>
+        <circle cx="160" cy="150" r="4" fill="#a8182f" stroke="none"/>
+        <circle cx="240" cy="150" r="4" fill="#a8182f" stroke="none"/>
+        <path d="M40 60 L120 100" stroke="#232832"/>
+        <path d="M360 60 L280 100" stroke="#232832"/>
+        <path d="M60 340 L150 300" stroke="#232832"/>
+        <path d="M340 340 L250 300" stroke="#232832"/>
+      </g>
+    </svg>
+  </div>
+
+  <p class="hero__eyebrow">case #: 59:59-JGSW · status: <span>unresolved</span></p>
+  <h1 class="hero__title"><span class="glitch" id="heroTitle">JIGSAW RANSOMWARE</span></h1>
+  <p class="hero__subtitle">Anatomy of a Ransomware Attack</p>
+  <p class="hero__lead">Tracing a suspicious executable from the first clue to the cryptographic key.</p>
+
+  <div class="hero__scroll">SCROLL TO BEGIN</div>
+</header>
+
+<main>
+
+<!-- ============================== 01 ============================== -->
+<section class="exhibit exhibit--intro" id="exhibit-01">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 01 — INTAKE</span>
+    <h2 class="exhibit__title reveal">The story begins with a suspicious executable.</h2>
+    <div class="grid-2">
+      <div class="exhibit__body reveal">
+        <p>A file lands on the desk. No warning label, no digital signature anyone recognizes — just a single executable that a colleague noticed behaving strangely on a test machine.</p>
+        <p>Before touching anything else, the file itself becomes the first piece of evidence. Its size, its hash, and the way it was built all say something before a single instruction has been traced.</p>
+      </div>
+      <div class="evidence reveal" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> jigsaw.exe — static triage</span><span>#A</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-01-static-triage.jpg" alt="Static triage of jigsaw.exe" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-01-static-triage.jpg<br>Static analysis / file properties screenshot</div>
+        </div>
+      </div>
+    </div>
+    <div class="evidence-strip reveal">
+      <div class="evidence-strip__item"><strong>Sample</strong><span>jigsaw.exe</span></div>
+      <div class="evidence-strip__item"><strong>Format</strong><span>PE32, .NET assembly (i386)</span></div>
+      <div class="evidence-strip__item"><strong>SHA-256</strong><span id="sampleHash">— pending upload —</span></div>
+      <div class="evidence-strip__item"><strong>First indicator</strong><span>Managed .NET code, unusually resource-heavy for its size</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 02 ============================== -->
+<section class="exhibit exhibit--strings" id="exhibit-02">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 02 — FIRST CLUES</span>
+    <h2 class="exhibit__title reveal">The binary was already telling us what it was.</h2>
+    <div class="grid-2">
+      <div>
+        <p class="exhibit__lede reveal">A string dump is rarely dramatic. This one was different — every line read less like leftover debug text and more like a confession.</p>
+        <div class="terminal reveal" data-terminal>
+          <div class="terminal__bar"><span></span><span></span><span></span><em>strings jigsaw.exe | grep -i .</em></div>
+          <div class="terminal__body" id="stringsTerminal">
+            <div class="terminal__line" data-line>BitcoinBlackmailer.exe</div>
+            <div class="terminal__line" data-line>EncryptedFileList.txt</div>
+            <div class="terminal__line" data-line>FileSystemSimulation</div>
+            <div class="terminal__line is-hit" data-line>Jigsaw</div>
+            <div class="terminal__line" data-line>ExtensionsToEncrypt</div>
+            <div class="terminal__line is-hit" data-line>59:59</div>
+            <div class="terminal__line is-hit" data-line>"I want to play a game"</div>
+            <div class="terminal__line is-hit" data-line>"You did not sent me enough! Try again!"</div>
+            <div class="terminal__line is-hit" data-line>"files will be deleted"</div>
+          </div>
+        </div>
+      </div>
+      <div class="evidence reveal" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> string extraction</span><span>#B</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-02-strings.jpg" alt="Extracted strings from the binary" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-02-strings.jpg<br>Strings / resource dump screenshot</div>
+        </div>
+      </div>
+    </div>
+    <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">This was no ordinary executable. A game reference, a countdown, threats about deletion, a file explicitly named for its intent — the sample was naming its own behaviour before we ever ran it.</p>
+  </div>
+</section>
+
+<!-- ============================== 03 ============================== -->
+<section class="exhibit exhibit--ransom" id="exhibit-03">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 03 — FOLLOWING THE MONEY</span>
+    <h2 class="exhibit__title reveal">A countdown, a demand, and a wallet.</h2>
+    <div class="grid-2">
+      <div class="ransom-panel reveal">
+        <p class="ransom-panel__clock" id="ransomClock">59:59</p>
+        <p class="ransom-panel__msg">
+          <span class="quote">"I want to play a game with you. Let me explain the rules."</span>
+          <span class="quote">"You did not sent me enough! Try again!"</span>
+          "Some files have already been deleted. The rest will follow if payment is not received in time."
+        </p>
+      </div>
+      <div class="evidence reveal" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> ransom note UI</span><span>#C</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-03-ransom-ui.jpg" alt="Ransom note interface shown by the sample" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-03-ransom-ui.jpg<br>Screenshot of the sample's own ransom-note window</div>
+        </div>
+      </div>
+    </div>
+    <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">Payment strings, a wallet reference, and a countdown timer aren't decoration — they're the business logic. Whatever encrypts the files exists to make this note credible.</p>
+  </div>
+</section>
+
+<!-- ============================== 04 ============================== -->
+<section class="exhibit exhibit--protection" id="exhibit-04">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 04 — BENEATH THE SURFACE</span>
+    <h2 class="exhibit__title reveal">Before we could read it, we had to unlock it.</h2>
+    <p class="exhibit__lede reveal">The assembly wasn't hiding behind anything exotic — a standard <strong>ConfuserEx / Confuser 1.x</strong> pass over a <strong>.NET</strong>, <strong>C#</strong>, 32-bit binary. But obfuscated is still obfuscated.</p>
+    <div class="chip-row reveal">
+      <span class="chip">C#</span><span class="chip">.NET (i386)</span><span class="chip">Confuser 1.x</span><span class="chip">PE32</span>
+    </div>
+    <div class="lock-compare reveal">
+      <div class="lock-compare__panel is-locked">
+        <h4>BEFORE — obfuscated IL</h4>
+        <pre class="lock-compare__code scrambled">.method private hidebysig
+  static void █▓▒░1a2b3c() {
+    ldstr "\u0050\u0072\u006f..."
+    call ▓▒░_x9F::▒░_A1(string)
+    ldc.i4 0x2E
+    xor
+    ret
+}</pre>
+      </div>
+      <div class="lock-compare__arrow" aria-hidden="true">→</div>
+      <div class="lock-compare__panel is-clear">
+        <h4>AFTER — de4dot / manual cleanup</h4>
+        <pre class="lock-compare__code clean">private static void InitSoftware()
+{
+    string path = "%AppData%\\...";
+    Locker.StartEncryption(path);
+    Countdown.Begin(60);
+}</pre>
+      </div>
+    </div>
+    <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">Before we could understand the ransomware, we had to get past its protection. Once the control-flow and string encryption fell away, the real program underneath was small — and legible.</p>
+  </div>
+</section>
+
+<!-- ============================== 05 ============================== -->
+<section class="exhibit exhibit--flow" id="exhibit-05">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 05 — FINDING THE DOOR IN</span>
+    <h2 class="exhibit__title reveal">Every path through the code led to the same room.</h2>
+    <p class="exhibit__lede reveal">With the obfuscation stripped, the execution flow read like a floor plan. Three rooms mattered.</p>
+    <div class="trail reveal" id="executionTrail">
+      <div class="trail__step" data-step><code>Main.Program.Main()</code><small>Entry point — sets up the countdown UI and calls into the software layer.</small></div>
+      <div class="trail__step" data-step><code>Hacking.InitSoftware()</code><small>Initializes persistence, drops the encrypted-file manifest, arms the timer.</small></div>
+      <div class="trail__step is-final" data-step><code>Main.Tools.Locker</code><small>The component that actually touches the victim's files. This is where the investigation was headed.</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 06 — SMOKING GUN ============================== -->
+<section class="exhibit exhibit--key" id="exhibit-06">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 06 — THE SMOKING GUN</span>
+    <h2 class="exhibit__title reveal">We finally found the mechanism.</h2>
+    <p class="exhibit__lede reveal">Inside <code>Locker</code>, one class did the real work: <strong>AesCryptoServiceProvider</strong>. And it wasn't generating anything at runtime — the key and the IV were sitting in the code, hard-coded.</p>
+
+    <div class="key-reveal" id="keyReveal">
+      <div class="key-reveal__row">
+        <p class="key-reveal__label">AES KEY</p>
+        <p class="key-reveal__value" id="keyValue" data-full="OoIsAwwF23cICQoLDA0ODe=="></p>
+      </div>
+      <div class="key-reveal__row">
+        <p class="key-reveal__label">AES IV</p>
+        <p class="key-reveal__value" id="ivValue" data-full="0, 1, 0, 3, 5, 3, 0, 1, 0, 0, 2, 0, 6, 7, 6, 0"></p>
+      </div>
+      <p class="key-reveal__ext">Encrypted files are renamed with the extension <strong>.fun</strong></p>
+    </div>
+
+    <div class="evidence reveal" data-evidence-card style="margin-top:2.4rem; max-width:42rem;">
+      <div class="evidence__label"><span><span class="dot"></span> decompiled Locker class</span><span>#D</span></div>
+      <div class="evidence__frame">
+        <img data-src="assets/images/exhibit-06-locker-source.jpg" alt="Decompiled AES encryption routine" loading="lazy">
+        <div class="evidence__fallback"><b>DROP HERE</b>exhibit-06-locker-source.jpg<br>Decompiler view of the AES key/IV constants</div>
+      </div>
+    </div>
+    <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">A static key means a static solution. Whatever this sample did to a file, the same key and IV could undo it — as long as no other layer changed the picture.</p>
+  </div>
+</section>
+
+<!-- ============================== 07 ============================== -->
+<section class="exhibit exhibit--victim" id="exhibit-07">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 07 — WHAT HAPPENS TO A VICTIM'S FILE</span>
+    <h2 class="exhibit__title reveal">One file, watched end to end.</h2>
+    <p class="exhibit__lede reveal">Click the file below to step it through what <code>Locker</code> actually does — the same operation that ran, silently, on every matching file on the machine.</p>
+    <div class="file-demo reveal" id="singleFileDemo">
+      <div class="file-row" id="demoFileRow" tabindex="0" role="button" aria-pressed="false">
+        <span class="file-row__icon">▤</span>
+        <span class="file-row__name" id="demoFileName">document.txt</span>
+        <span class="file-row__state" id="demoFileState">click to encrypt</span>
+      </div>
+      <p class="file-demo__hint">AES-128 · hard-coded key/IV → original deleted → <kbd>.fun</kbd> written in its place.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 08 ============================== -->
+<section class="exhibit exhibit--live" id="exhibit-08">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 08 — WATCHING THE ATTACK</span>
+    <h2 class="exhibit__title reveal">Detonated in a contained environment.</h2>
+    <p class="exhibit__lede reveal">Five decoy files, seeded across a flat and a nested directory. Click <strong>Run sample</strong> to watch the same behaviour play out across all of them.</p>
+    <div class="file-demo reveal" id="fleetDemo">
+      <div class="file-row" data-fname="test.txt"><span class="file-row__icon">▤</span><span class="file-row__name">test.txt</span><span class="file-row__state">clean</span></div>
+      <div class="file-row" data-fname="secret.txt"><span class="file-row__icon">▤</span><span class="file-row__name">secret.txt</span><span class="file-row__state">clean</span></div>
+      <div class="file-row" data-fname="data.csv"><span class="file-row__icon">▤</span><span class="file-row__name">data.csv</span><span class="file-row__state">clean</span></div>
+      <div class="file-row" data-fname="Docs/document.txt"><span class="file-row__icon">▤</span><span class="file-row__name">Docs/document.txt</span><span class="file-row__state">clean</span></div>
+      <div class="file-row" data-fname="Nested/Deep/deep.txt"><span class="file-row__icon">▤</span><span class="file-row__name">Nested/Deep/deep.txt</span><span class="file-row__state">clean</span></div>
+    </div>
+    <button class="chip" id="runSampleBtn" style="margin-top:1.6rem; cursor:pointer; background:none; font-family:var(--f-mono);">▶ Run sample</button>
+  </div>
+</section>
+
+<!-- ============================== 09 ============================== -->
+<section class="exhibit exhibit--payoff" id="exhibit-09">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 09 — THE INVESTIGATION PAYS OFF</span>
+    <h2 class="exhibit__title reveal">Same key. Same IV. Reversed.</h2>
+    <p class="exhibit__lede reveal">The material recovered in Exhibit 06 wasn't just an explanation — it was a working decryption key. Running <code>AesCryptoServiceProvider</code> in reverse with the same constants turned <code>.fun</code> files back into what they used to be.</p>
+    <div class="trail reveal">
+      <div class="trail__step" data-step><code>encrypted.fun</code><small>Read ciphertext, apply the recovered key + IV.</small></div>
+      <div class="trail__step" data-step><code>AES-128-CBC (decrypt)</code><small>Reverse of the exact routine found inside Locker.</small></div>
+      <div class="trail__step is-final" data-step><code>original filename restored</code><small>The <code>.fun</code> suffix is stripped and the file is rewritten in place.</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 10 — RECOVERY ============================== -->
+<section class="exhibit exhibit--recovery" id="exhibit-10">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 10 — RECOVERY</span>
+    <h2 class="exhibit__title reveal">The filesystem, restored.</h2>
+    <p class="recovery-count reveal" id="recoveryCount">0</p>
+    <p class="reveal">files recovered</p>
+    <div class="file-demo reveal" id="recoveryDemo" style="margin-top:2rem;">
+      <div class="file-row" data-fname="data.csv"><span class="file-row__icon">▤</span><span class="file-row__name">data.csv</span><span class="file-row__state">restored</span></div>
+      <div class="file-row" data-fname="secret.txt"><span class="file-row__icon">▤</span><span class="file-row__name">secret.txt</span><span class="file-row__state">restored</span></div>
+      <div class="file-row" data-fname="test.txt"><span class="file-row__icon">▤</span><span class="file-row__name">test.txt</span><span class="file-row__state">restored</span></div>
+      <div class="file-row" data-fname="Docs/document.txt"><span class="file-row__icon">▤</span><span class="file-row__name">Docs/document.txt</span><span class="file-row__state">restored</span></div>
+      <div class="file-row" data-fname="Nested/Deep/deep.txt"><span class="file-row__icon">▤</span><span class="file-row__name">Nested/Deep/deep.txt</span><span class="file-row__state">restored</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 11 — SUMMARY CHAIN ============================== -->
+<section class="exhibit exhibit--summary" id="exhibit-11">
+  <div class="exhibit__inner">
+    <span class="exhibit__tag">EXHIBIT 11 — WHAT THE INVESTIGATION REVEALED</span>
+    <h2 class="exhibit__title reveal">The full chain, laid out.</h2>
+    <div class="chain reveal">
+      <div class="chain__link"><em>01</em><strong>Suspicious executable</strong><span>Flagged on intake, before any code was traced.</span></div>
+      <div class="chain__link"><em>02</em><strong>.NET / Confuser</strong><span>32-bit managed binary under a standard obfuscator.</span></div>
+      <div class="chain__link"><em>03</em><strong>Deobfuscation</strong><span>Control-flow and strings recovered to readable IL.</span></div>
+      <div class="chain__link"><em>04</em><strong>Locker</strong><span>The class responsible for touching victim files.</span></div>
+      <div class="chain__link"><em>05</em><strong>AES</strong><span>AesCryptoServiceProvider, called with static parameters.</span></div>
+      <div class="chain__link"><em>06</em><strong>Hard-coded key + IV</strong><span>The single point of failure in the entire scheme.</span></div>
+      <div class="chain__link"><em>07</em><strong>.fun extension</strong><span>The visible marker of an encrypted file.</span></div>
+      <div class="chain__link"><em>08</em><strong>Original file deletion</strong><span>The irreversible half of the attack — everything before this was recoverable.</span></div>
+      <div class="chain__link"><em>09</em><strong>Recovery</strong><span>The same key, run backward, closed the case.</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================== CLOSING ============================== -->
+<section class="closing" id="closing">
+  <div class="closing__lines reveal">
+    <p>Jigsaw looked chaotic from the outside.</p>
+    <p>But malware rarely stays mysterious once you follow the evidence.</p>
+    <p>Static clues led to behavioral evidence. Behavior led to code. Code revealed the cryptographic mechanism. And the cryptographic mechanism made recovery possible.</p>
+  </div>
+  <div class="closing__stamp" id="closingStamp">CASE CLOSED</div>
+  <p class="closing__meta">Written up as a malware-analysis case study · <a href="#hero">back to top</a></p>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
