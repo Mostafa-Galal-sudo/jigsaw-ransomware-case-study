@@ -12,6 +12,35 @@
   gsap.registerPlugin(ScrollTrigger);
 
   /* ------------------------------------------------------------------ *
+   * -1. Entrance sequence — plays once, dismissed by timeout or by the
+   *     user clicking / pressing a key / scrolling / touching.
+   * ------------------------------------------------------------------ */
+  (function () {
+    var overlay = document.getElementById("entranceOverlay");
+    if (!overlay) return;
+    document.body.classList.add("entrance-active");
+    var dismissed = false;
+    function dismiss() {
+      if (dismissed) return;
+      dismissed = true;
+      overlay.classList.add("is-leaving");
+      document.body.classList.remove("entrance-active");
+      window.removeEventListener("keydown", dismiss);
+      window.removeEventListener("wheel", dismiss);
+      window.removeEventListener("touchstart", dismiss);
+      setTimeout(function () {
+        overlay.style.display = "none";
+        window.dispatchEvent(new CustomEvent("entrance:dismissed"));
+      }, 550);
+    }
+    overlay.addEventListener("click", dismiss);
+    window.addEventListener("keydown", dismiss);
+    window.addEventListener("wheel", dismiss, { passive: true });
+    window.addEventListener("touchstart", dismiss, { passive: true });
+    setTimeout(dismiss, reduceMotion ? 900 : 3400);
+  })();
+
+  /* ------------------------------------------------------------------ *
    * 0. Evidence image loading — swap in the fallback slot if the
    *    screenshot hasn't been dropped into /assets/images/ yet.
    * ------------------------------------------------------------------ */
@@ -64,29 +93,39 @@
 
   /* ------------------------------------------------------------------ *
    * 3. Hero — one orchestrated load-in sequence + ambient glitch flicker
+   *    Held until the entrance sequence has been dismissed, so the two
+   *    don't play on top of each other.
    * ------------------------------------------------------------------ */
-  var heroTl = gsap.timeline({ delay: 0.2 });
-  heroTl
-    .from(".hero__eyebrow", { opacity: 0, y: -8, duration: 0.5 })
-    .from(".hero__title", { opacity: 0, y: 22, duration: 0.8, ease: "power3.out" }, "-=0.2")
-    .from(".hero__subtitle", { opacity: 0, y: 14, duration: 0.6 }, "-=0.35")
-    .from(".hero__lead", { opacity: 0, y: 10, duration: 0.6 }, "-=0.3")
-    .from(".hero__scroll", { opacity: 0, duration: 0.6 }, "-=0.2")
-    .from("#heroMask", { opacity: 0, scale: 1.08, duration: 1.1, ease: "power2.out" }, 0);
+  function playHeroIntro() {
+    var heroTl = gsap.timeline();
+    heroTl
+      .from(".hero__eyebrow", { opacity: 0, y: -8, duration: 0.5 })
+      .from(".hero__title", { opacity: 0, y: 22, duration: 0.8, ease: "power3.out" }, "-=0.2")
+      .from(".hero__subtitle", { opacity: 0, y: 14, duration: 0.6 }, "-=0.35")
+      .from(".hero__lead", { opacity: 0, y: 10, duration: 0.6 }, "-=0.3")
+      .from(".hero__scroll", { opacity: 0, duration: 0.6 }, "-=0.2")
+      .from("#heroMask", { opacity: 0, scale: 1.08, duration: 1.1, ease: "power2.out" }, 0);
 
-  if (!reduceMotion) {
-    gsap.to("#heroMask", { rotate: 6, duration: 18, repeat: -1, yoyo: true, ease: "sine.inOut" });
-    var title = document.getElementById("heroTitle");
-    function glitchPulse() {
-      gsap.to(title, {
-        duration: 0.09, skewX: 6, textShadow: "3px 0 #a8182f, -3px 0 #49e0c9",
-        onComplete: function () {
-          gsap.to(title, { duration: 0.12, skewX: 0, textShadow: "none" });
-        }
-      });
-      gsap.delayedCall(4 + Math.random() * 5, glitchPulse);
+    if (!reduceMotion) {
+      gsap.to("#heroMask", { rotate: 6, duration: 18, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      var title = document.getElementById("heroTitle");
+      function glitchPulse() {
+        gsap.to(title, {
+          duration: 0.09, skewX: 6, textShadow: "3px 0 #a8182f, -3px 0 #49e0c9",
+          onComplete: function () {
+            gsap.to(title, { duration: 0.12, skewX: 0, textShadow: "none" });
+          }
+        });
+        gsap.delayedCall(4 + Math.random() * 5, glitchPulse);
+      }
+      gsap.delayedCall(3, glitchPulse);
     }
-    gsap.delayedCall(3, glitchPulse);
+  }
+
+  if (document.getElementById("entranceOverlay")) {
+    window.addEventListener("entrance:dismissed", playHeroIntro, { once: true });
+  } else {
+    playHeroIntro();
   }
 
   /* ------------------------------------------------------------------ *

@@ -18,6 +18,17 @@
 <div class="vignette"></div>
 <nav class="case-thread" id="caseThread" aria-hidden="true"></nav>
 
+<!-- ============================== ENTRANCE ============================== -->
+<div class="entrance" id="entranceOverlay" role="button" tabindex="0" aria-label="Skip intro">
+  <div class="entrance__noise"></div>
+  <div class="entrance__scan"></div>
+  <h1 class="entrance__title" id="entranceTitle">
+    <span class="entrance__line" data-text="JIGSAW">JIGSAW</span>
+    <span class="entrance__line entrance__line--sub" data-text="RANSOMWARE">RANSOMWARE</span>
+  </h1>
+  <p class="entrance__skip">click / scroll / any key to continue</p>
+</div>
+
 <!-- ============================== HERO ============================== -->
 <header class="hero" id="hero">
   <div class="hero__mask" id="heroMask" aria-hidden="true">
@@ -62,20 +73,30 @@
       <div class="exhibit__body reveal">
         <p>A file lands on the desk. No warning label, no digital signature anyone recognizes — just a single executable that a colleague noticed behaving strangely on a test machine.</p>
         <p>Before touching anything else, the file itself becomes the first piece of evidence. Its size, its hash, and the way it was built all say something before a single instruction has been traced.</p>
+        <p>A hash lookup against public threat-intel closes the first loop fast: this exact sample was already known, already tagged, already named.</p>
       </div>
-      <div class="evidence reveal" data-evidence-card>
-        <div class="evidence__label"><span><span class="dot"></span> jigsaw.exe — static triage</span><span>#A</span></div>
-        <div class="evidence__frame">
-          <img data-src="assets/images/exhibit-01-static-triage.jpg" alt="Static triage of jigsaw.exe" loading="lazy">
-          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-01-static-triage.jpg<br>Static analysis / file properties screenshot</div>
+      <div style="display:flex; flex-direction:column; gap:1.2rem;">
+        <div class="evidence reveal" data-evidence-card>
+          <div class="evidence__label"><span><span class="dot"></span> jigsaw.exe — static triage</span><span>#A</span></div>
+          <div class="evidence__frame">
+            <img data-src="assets/images/exhibit-01-static-triage.png" alt="PowerShell static triage of jigsaw.exe showing file size and SHA-256" loading="lazy">
+            <div class="evidence__fallback"><b>DROP HERE</b>exhibit-01-static-triage.png<br>Static analysis / file properties screenshot</div>
+          </div>
+        </div>
+        <div class="evidence reveal" data-evidence-card>
+          <div class="evidence__label"><span><span class="dot"></span> threat-intel match</span><span>#A2</span></div>
+          <div class="evidence__frame">
+            <img data-src="assets/images/exhibit-01-bazaar-confirm.png" alt="Public malware database entry confirming the Jigsaw signature" loading="lazy">
+            <div class="evidence__fallback"><b>DROP HERE</b>exhibit-01-bazaar-confirm.png<br>Public sample-database confirmation</div>
+          </div>
         </div>
       </div>
     </div>
     <div class="evidence-strip reveal">
       <div class="evidence-strip__item"><strong>Sample</strong><span>jigsaw.exe</span></div>
-      <div class="evidence-strip__item"><strong>Format</strong><span>PE32, .NET assembly (i386)</span></div>
-      <div class="evidence-strip__item"><strong>SHA-256</strong><span id="sampleHash">— pending upload —</span></div>
-      <div class="evidence-strip__item"><strong>First indicator</strong><span>Managed .NET code, unusually resource-heavy for its size</span></div>
+      <div class="evidence-strip__item"><strong>Format</strong><span>PE32, .NET (i386, GUI)</span></div>
+      <div class="evidence-strip__item"><strong>SHA-256</strong><span id="sampleHash">3AE96F73D805E1D3995253DB4D910300D8442EA603737A1428B613061E7F61E7</span></div>
+      <div class="evidence-strip__item"><strong>Public signature</strong><span>Jigsaw — flagged before we ever opened it</span></div>
     </div>
   </div>
 </section>
@@ -104,14 +125,14 @@
         </div>
       </div>
       <div class="evidence reveal" data-evidence-card>
-        <div class="evidence__label"><span><span class="dot"></span> string extraction</span><span>#B</span></div>
+        <div class="evidence__label"><span><span class="dot"></span> on execution — a decoy first</span><span>#B</span></div>
         <div class="evidence__frame">
-          <img data-src="assets/images/exhibit-02-strings.jpg" alt="Extracted strings from the binary" loading="lazy">
-          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-02-strings.jpg<br>Strings / resource dump screenshot</div>
+          <img data-src="assets/images/exhibit-02-decoy-dialog.png" alt="A fake software-registration dialog shown when the sample first runs" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-02-decoy-dialog.png<br>Decoy dialog shown on first run</div>
         </div>
       </div>
     </div>
-    <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">This was no ordinary executable. A game reference, a countdown, threats about deletion, a file explicitly named for its intent — the sample was naming its own behaviour before we ever ran it.</p>
+    <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">This was no ordinary executable. A game reference, a countdown, threats about deletion, a file explicitly named for its intent — the sample was naming its own behaviour before we ever ran it. And the very first thing it showed on screen wasn't a ransom note at all: a fake "software registered" confirmation, buying itself a few quiet seconds before the real payload introduced itself.</p>
   </div>
 </section>
 
@@ -132,8 +153,18 @@
       <div class="evidence reveal" data-evidence-card>
         <div class="evidence__label"><span><span class="dot"></span> ransom note UI</span><span>#C</span></div>
         <div class="evidence__frame">
-          <img data-src="assets/images/exhibit-03-ransom-ui.jpg" alt="Ransom note interface shown by the sample" loading="lazy">
-          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-03-ransom-ui.jpg<br>Screenshot of the sample's own ransom-note window</div>
+          <img data-src="assets/images/exhibit-03-ransom-ui.png" alt="Ransom note interface shown by the sample, with countdown and Bitcoin address" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-03-ransom-ui.png<br>Screenshot of the sample's own ransom-note window</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2 reveal" style="margin-top:2.4rem;">
+      <p class="exhibit__body" style="margin:0;">The note wasn't bluffing about checking payment either. A dedicated <code>Blockr</code> class calls out to <code>blockr.io</code>'s public API to read a wallet's balance and the live BTC price — the "I made a payment, now give me back my files" button had something real to poll against.</p>
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> Blockr — BTC balance check</span><span>#C2</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-03-blockr-class.png" alt="Decompiled Blockr class querying blockr.io for BTC balance and price" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-03-blockr-class.png<br>Decompiled Blockr class</div>
         </div>
       </div>
     </div>
@@ -146,7 +177,7 @@
   <div class="exhibit__inner">
     <span class="exhibit__tag">EXHIBIT 04 — BENEATH THE SURFACE</span>
     <h2 class="exhibit__title reveal">Before we could read it, we had to unlock it.</h2>
-    <p class="exhibit__lede reveal">The assembly wasn't hiding behind anything exotic — a standard <strong>ConfuserEx / Confuser 1.x</strong> pass over a <strong>.NET</strong>, <strong>C#</strong>, 32-bit binary. But obfuscated is still obfuscated.</p>
+    <p class="exhibit__lede reveal">The assembly wasn't hiding behind anything exotic — a standard <strong>ConfuserEx / Confuser 1.x</strong> pass over a <strong>.NET</strong>, <strong>C#</strong>, 32-bit binary. But obfuscated is still obfuscated: unpacking it took a small toolchain, not one click — 321 proxy calls resolved, 193 junk methods stripped, switch-based control flow killed, before <code>de4dot</code> could even attempt the final rename pass.</p>
     <div class="chip-row reveal">
       <span class="chip">C#</span><span class="chip">.NET (i386)</span><span class="chip">Confuser 1.x</span><span class="chip">PE32</span>
     </div>
@@ -174,6 +205,25 @@
       </div>
     </div>
     <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">Before we could understand the ransomware, we had to get past its protection. Once the control-flow and string encryption fell away, the real program underneath was small — and legible.</p>
+
+    <div class="evidence-quad reveal">
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> DIE — before</span><span>#D1</span></div>
+        <div class="evidence__frame"><img data-src="assets/images/exhibit-04-die-before.png" alt="Detect It Easy scan showing Confuser 1.X protector" loading="lazy"><div class="evidence__fallback"><b>DROP HERE</b>exhibit-04-die-before.png</div></div>
+      </div>
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> UnConfuserEx</span><span>#D2</span></div>
+        <div class="evidence__frame"><img data-src="assets/images/exhibit-04-unconfuser.png" alt="UnConfuserEx unpacking the sample" loading="lazy"><div class="evidence__fallback"><b>DROP HERE</b>exhibit-04-unconfuser.png</div></div>
+      </div>
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> de4dot — final pass</span><span>#D3</span></div>
+        <div class="evidence__frame"><img data-src="assets/images/exhibit-04-de4dot.png" alt="de4dot cleaning and renaming obfuscated symbols" loading="lazy"><div class="evidence__fallback"><b>DROP HERE</b>exhibit-04-de4dot.png</div></div>
+      </div>
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> DIE — after</span><span>#D4</span></div>
+        <div class="evidence__frame"><img data-src="assets/images/exhibit-04-die-after.png" alt="Detect It Easy scan confirming the protector is gone" loading="lazy"><div class="evidence__fallback"><b>DROP HERE</b>exhibit-04-die-after.png</div></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -182,11 +232,23 @@
   <div class="exhibit__inner">
     <span class="exhibit__tag">EXHIBIT 05 — FINDING THE DOOR IN</span>
     <h2 class="exhibit__title reveal">Every path through the code led to the same room.</h2>
-    <p class="exhibit__lede reveal">With the obfuscation stripped, the execution flow read like a floor plan. Three rooms mattered.</p>
-    <div class="trail reveal" id="executionTrail">
-      <div class="trail__step" data-step><code>Main.Program.Main()</code><small>Entry point — sets up the countdown UI and calls into the software layer.</small></div>
-      <div class="trail__step" data-step><code>Hacking.InitSoftware()</code><small>Initializes persistence, drops the encrypted-file manifest, arms the timer.</small></div>
-      <div class="trail__step is-final" data-step><code>Main.Tools.Locker</code><small>The component that actually touches the victim's files. This is where the investigation was headed.</small></div>
+    <p class="exhibit__lede reveal">With the obfuscation stripped, the execution flow read like a floor plan. Three rooms mattered — and the manifest header itself had one more admission: the assembly was titled <strong>"Firefox"</strong>, product name and all, right down to a fake 1999–2012 Mozilla copyright notice.</p>
+    <div class="grid-2 reveal">
+      <div class="trail" id="executionTrail">
+        <div class="trail__step" data-step><code>Main.Program.Main()</code><small>Entry point — sets up the countdown UI and calls into the software layer.</small></div>
+        <div class="trail__step" data-step><code>Hacking.InitSoftware()</code><small>Initializes persistence, drops the encrypted-file manifest, arms the timer.</small></div>
+        <div class="trail__step is-final" data-step><code>Main.Tools.Locker</code><small>The component that actually touches the victim's files. This is where the investigation was headed.</small></div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:1.2rem;">
+        <div class="evidence" data-evidence-card>
+          <div class="evidence__label"><span><span class="dot"></span> assembly manifest</span><span>#E1</span></div>
+          <div class="evidence__frame"><img data-src="assets/images/exhibit-05-assembly-header.png" alt="Decompiled assembly manifest disguised as Firefox 37.0.2.5583" loading="lazy"><div class="evidence__fallback"><b>DROP HERE</b>exhibit-05-assembly-header.png</div></div>
+        </div>
+        <div class="evidence" data-evidence-card>
+          <div class="evidence__label"><span><span class="dot"></span> Hacking class</span><span>#E2</span></div>
+          <div class="evidence__frame"><img data-src="assets/images/exhibit-05-hacking-class.png" alt="Decompiled Hacking class with InitSoftware, ShouldActivate, RemoveItself" loading="lazy"><div class="evidence__fallback"><b>DROP HERE</b>exhibit-05-hacking-class.png</div></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -210,11 +272,20 @@
       <p class="key-reveal__ext">Encrypted files are renamed with the extension <strong>.fun</strong></p>
     </div>
 
-    <div class="evidence reveal" data-evidence-card style="margin-top:2.4rem; max-width:42rem;">
-      <div class="evidence__label"><span><span class="dot"></span> decompiled Locker class</span><span>#D</span></div>
-      <div class="evidence__frame">
-        <img data-src="assets/images/exhibit-06-locker-source.jpg" alt="Decompiled AES encryption routine" loading="lazy">
-        <div class="evidence__fallback"><b>DROP HERE</b>exhibit-06-locker-source.jpg<br>Decompiler view of the AES key/IV constants</div>
+    <div class="grid-2 reveal" style="margin-top:2.4rem;">
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> decompiled Locker class</span><span>#F</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-06-locker-source.png" alt="Decompiled Locker class showing the hard-coded AES key and .fun extension" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-06-locker-source.png<br>Decompiler view of the AES key/IV constants</div>
+        </div>
+      </div>
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> verifying the raw bytes</span><span>#F2</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-06-key-decode.png" alt="Terminal decoding the base64 key to raw hex bytes" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-06-key-decode.png<br>base64 -d | xxd on the recovered key</div>
+        </div>
       </div>
     </div>
     <p class="exhibit__body reveal" style="margin-top:2rem; max-width:60ch;">A static key means a static solution. Whatever this sample did to a file, the same key and IV could undo it — as long as no other layer changed the picture.</p>
@@ -252,6 +323,24 @@
       <div class="file-row" data-fname="Nested/Deep/deep.txt"><span class="file-row__icon">▤</span><span class="file-row__name">Nested/Deep/deep.txt</span><span class="file-row__state">clean</span></div>
     </div>
     <button class="chip" id="runSampleBtn" style="margin-top:1.6rem; cursor:pointer; background:none; font-family:var(--f-mono);">▶ Run sample</button>
+    <p class="exhibit__body reveal" style="margin-top:1.4rem; max-width:60ch; font-size:.9rem;">One control file — <code>sample.bin</code> — was left untouched in every run. It sat outside <code>GetExtensionsToEncrypt()</code>'s list, a small reminder that the targeting was deliberate, not indiscriminate.</p>
+
+    <div class="grid-2 reveal" style="margin-top:2.4rem;">
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> live run — filesystem after</span><span>#G1</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-08-fleet-listing.png" alt="PowerShell listing showing the .fun files after detonation" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-08-fleet-listing.png</div>
+        </div>
+      </div>
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> the sample's own encrypted-file log</span><span>#G2</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-08-encryptedfiles-dialog.png" alt="EncryptedFiles manifest window listing every touched path, alongside the live countdown" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-08-encryptedfiles-dialog.png</div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -266,6 +355,47 @@
       <div class="trail__step" data-step><code>AES-128-CBC (decrypt)</code><small>Reverse of the exact routine found inside Locker.</small></div>
       <div class="trail__step is-final" data-step><code>original filename restored</code><small>The <code>.fun</code> suffix is stripped and the file is rewritten in place.</small></div>
     </div>
+
+    <div class="grid-2 reveal" style="margin-top:2.4rem; align-items:stretch;">
+      <div class="terminal" style="max-height:22rem; overflow:auto;">
+        <div class="terminal__bar"><span></span><span></span><span></span><em>decryption.ps1</em></div>
+        <pre style="margin:0; padding:1.1rem 1.2rem; font-family:var(--f-mono); font-size:.76rem; line-height:1.55; color:var(--paper-dim); white-space:pre-wrap;">$root = Read-Host "Root directory to scan"
+
+$key = [Convert]::FromBase64String("OoIsAwwF23cICQoLDA0ODe==")
+$iv  = [byte[]](0,1,0,3,5,3,0,1,0,0,2,0,6,7,6,0)
+
+$files = Get-ChildItem -Path $root -Filter "*.fun" -File -Recurse
+Write-Host "[*] Found $($files.Count) encrypted files."
+
+foreach ($file in $files) {
+    $outputPath = [IO.Path]::Combine($file.DirectoryName, $file.BaseName)
+    $ciphertext = [IO.File]::ReadAllBytes($file.FullName)
+
+    $aes = New-Object System.Security.Cryptography.AesManaged
+    $aes.Key = $key
+    $aes.IV  = $iv
+    $decryptor = $aes.CreateDecryptor()
+
+    # first 16 bytes are a discardable header the sample prepends
+    $plaintext = $decryptor.TransformFinalBlock($ciphertext, 16, $ciphertext.Length - 16)
+
+    [IO.File]::WriteAllBytes($outputPath, $plaintext[16..($plaintext.Length - 1)])
+    Write-Host "[+] $($file.FullName) -> $outputPath"
+    $aes.Dispose()
+}
+
+Write-Host "[+] Decryption scan completed."</pre>
+      </div>
+      <div class="evidence" data-evidence-card>
+        <div class="evidence__label"><span><span class="dot"></span> the script, run for real</span><span>#H</span></div>
+        <div class="evidence__frame">
+          <img data-src="assets/images/exhibit-09-decryption-run.png" alt="decryption.ps1 run against the lab, recovering all five files" loading="lazy">
+          <div class="evidence__fallback"><b>DROP HERE</b>exhibit-09-decryption-run.png</div>
+        </div>
+      </div>
+    </div>
+    <p class="exhibit__body reveal" style="margin-top:1.6rem; max-width:60ch; font-size:.9rem;">Five files in, five files out — <code>data.csv</code>, <code>secret.txt</code>, <code>test.txt</code>, <code>Docs\document.txt</code>, <code>Nested\Deep\deep.txt</code>. Same key that encrypted them, run backward.</p>
+    <p class="reveal" style="margin-top:1rem;"><a href="assets/decryption.ps1" download class="chip" style="text-decoration:none; display:inline-block;">⬇ download decryption.ps1</a></p>
   </div>
 </section>
 
