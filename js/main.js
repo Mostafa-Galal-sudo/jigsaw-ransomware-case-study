@@ -9,11 +9,66 @@
   "use strict";
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  gsap.registerPlugin(ScrollTrigger);
+
+  /* ------------------------------------------------------------------ *
+   * 0. Evidence image loading — runs first and does not depend on GSAP,
+   *    so a blocked/slow CDN can never take the screenshots down with it.
+   * ------------------------------------------------------------------ */
+  document.querySelectorAll(".evidence__frame img[data-src]").forEach(function (img) {
+    var frame = img.closest(".evidence__frame");
+    img.addEventListener("load", function () {
+      if (frame) frame.classList.remove("is-missing");
+    });
+    img.addEventListener("error", function () {
+      if (frame) frame.classList.add("is-missing");
+    });
+    img.src = img.getAttribute("data-src");
+  });
+
+  /* ------------------------------------------------------------------ *
+   * 0b. Lightbox — click any loaded evidence screenshot to view it at
+   *     full size. Independent of GSAP by design.
+   * ------------------------------------------------------------------ */
+  (function () {
+    var lightbox = document.getElementById("lightbox");
+    if (!lightbox) return;
+    var lbImg = document.getElementById("lightboxImg");
+    var lbCaption = document.getElementById("lightboxCaption");
+    var lbClose = document.getElementById("lightboxClose");
+
+    function open(src, caption) {
+      lbImg.src = src;
+      lbCaption.textContent = caption || "";
+      lightbox.classList.add("is-open");
+      lightbox.setAttribute("aria-hidden", "false");
+    }
+    function close() {
+      lightbox.classList.remove("is-open");
+      lightbox.setAttribute("aria-hidden", "true");
+      lbImg.src = "";
+    }
+
+    document.querySelectorAll(".evidence__frame img[data-src]").forEach(function (img) {
+      img.addEventListener("click", function () {
+        var frame = img.closest(".evidence__frame");
+        if (frame && frame.classList.contains("is-missing")) return; // nothing to enlarge
+        var label = img.closest(".evidence");
+        var caption = label ? label.querySelector(".evidence__label span") : null;
+        open(img.currentSrc || img.src, img.getAttribute("alt") || (caption ? caption.textContent : ""));
+      });
+    });
+
+    lightbox.addEventListener("click", close);
+    lbClose.addEventListener("click", function (e) { e.stopPropagation(); close(); });
+    window.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") close();
+    });
+  })();
 
   /* ------------------------------------------------------------------ *
    * -1. Entrance sequence — plays once, dismissed by timeout or by the
-   *     user clicking / pressing a key / scrolling / touching.
+   *     user clicking / pressing a key / scrolling / touching. Also does
+   *     not depend on GSAP, so it can never get stuck on screen.
    * ------------------------------------------------------------------ */
   (function () {
     var overlay = document.getElementById("entranceOverlay");
@@ -41,22 +96,18 @@
   })();
 
   /* ------------------------------------------------------------------ *
-   * 0. Evidence image loading — swap in the fallback slot if the
-   *    screenshot hasn't been dropped into /assets/images/ yet.
+   * Everything below is GSAP-driven scroll storytelling. If the GSAP
+   * CDN is blocked or slow, none of it runs — but the page above (text,
+   * evidence images, entrance) already works without it, so the site
+   * degrades to a static-but-complete page instead of breaking.
    * ------------------------------------------------------------------ */
-  document.querySelectorAll(".evidence__frame img[data-src]").forEach(function (img) {
-    var real = img.getAttribute("data-src");
-    var frame = img.closest(".evidence__frame");
-    var probe = new Image();
-    probe.onload = function () {
-      img.src = real;
-      if (frame) frame.classList.remove("is-missing");
-    };
-    probe.onerror = function () {
-      if (frame) frame.classList.add("is-missing");
-    };
-    probe.src = real;
-  });
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
+    document.querySelectorAll(".reveal").forEach(function (el) {
+      el.style.opacity = 1; el.style.transform = "none";
+    });
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger);
 
   /* ------------------------------------------------------------------ *
    * 1. Case thread — one pin per exhibit, lights up as its section
