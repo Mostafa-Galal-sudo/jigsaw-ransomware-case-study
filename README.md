@@ -1,6 +1,7 @@
-Jigsaw Ransomware
+# Jigsaw Ransomware
 
-An interactive case study about Jigsaw ransomware and how it encrypts files, uses a countdown ransom note, and can be analyzed through static and dynamic investigation.
+## Overview
 
-The project presents the investigation in a dark horror-inspired interface, showing the malware’s behavior, encryption process, recovered cryptographic details, and file recovery sequence.
+An interactive case study exploring the behavior and analysis of **Jigsaw ransomware**.
 
+The project presents the malware investigation through a dark, horror-inspired interface. It covers the ransom countdown, file-encryption process, embedded clues, cryptographic details, and recovery sequence.
