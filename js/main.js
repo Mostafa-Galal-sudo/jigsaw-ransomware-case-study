@@ -46,13 +46,14 @@
    * ------------------------------------------------------------------ */
   document.querySelectorAll(".evidence__frame img[data-src]").forEach(function (img) {
     var real = img.getAttribute("data-src");
+    var frame = img.closest(".evidence__frame");
     var probe = new Image();
     probe.onload = function () {
       img.src = real;
-      img.style.display = "block";
+      if (frame) frame.classList.remove("is-missing");
     };
     probe.onerror = function () {
-      img.style.display = "none";
+      if (frame) frame.classList.add("is-missing");
     };
     probe.src = real;
   });
