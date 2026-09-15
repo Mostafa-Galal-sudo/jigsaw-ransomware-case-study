@@ -16,50 +16,81 @@
 <div class="noise"></div>
 <div class="scanline"></div>
 <div class="vignette"></div>
+<div class="screen-tear" id="screenTear"></div>
+<div class="red-flash-overlay" id="redFlashOverlay"></div>
+
+<!-- Background Lurking Jigsaw Entity Layer -->
+<div class="jigsaw-entity-container" id="jigsawEntityContainer" aria-hidden="true">
+  <div class="jigsaw-entity-face" id="jigsawEntityFace"></div>
+  <div class="jigsaw-entity-eyes" id="jigsawEntityEyes"></div>
+  <div class="jigsaw-entity-glow" id="jigsawEntityGlow"></div>
+</div>
+
+<!-- Subtle Lurking Countdown Motif in Environment -->
+<div class="bg-countdown-motif" id="bgCountdownMotif" aria-hidden="true">59:59</div>
+
+<!-- ============================== FULLSCREEN GIF INTRO ============================== -->
+<div class="gif-intro-overlay" id="gifIntroOverlay" aria-hidden="true">
+  <img src="assets/gif/enterence.gif" alt="" class="gif-intro-img" id="gifIntroImg">
+  <div class="gif-intro-vignette"></div>
+  <p class="gif-intro-skip">[ CLICK TO ENTER ]</p>
+</div>
+
+<!-- Floating Mute Toggle (hidden until audio starts) -->
+<div class="audio-mute-widget" id="audioMuteWidget" style="display:none;">
+  <button type="button" class="mute-btn" id="muteBtn" aria-label="Mute audio">
+    <span id="muteBtnIcon">🔊</span>
+  </button>
+</div>
+
 <nav class="case-thread" id="caseThread" aria-hidden="true"></nav>
 
-<!-- ============================== ENTRANCE ============================== -->
-<div class="entrance" id="entranceOverlay" role="button" tabindex="0" aria-label="Skip intro">
+<!-- ============================== ENTRANCE / BOOT SEQUENCE ============================== -->
+<div class="entrance" id="entranceOverlay" role="button" tabindex="0" aria-label="Boot System" style="display:none;">
   <div class="entrance__noise"></div>
   <div class="entrance__scan"></div>
+  <div class="entrance__boot-terminal" id="bootTerminal">
+    <p class="boot-line">> SYSTEM BOOT SEQUENCE INITIATED...</p>
+    <p class="boot-line">> LOADING MEMORY AT 0x00400000...</p>
+    <p class="boot-line">> WARNING: UNEXPECTED PROCESS DETECTED: jigsaw.exe</p>
+    <p class="boot-line">> MEMORY CORRUPTION IN PROGRESS...</p>
+  </div>
   <h1 class="entrance__title" id="entranceTitle">
     <span class="entrance__line" data-text="JIGSAW">JIGSAW</span>
     <span class="entrance__line entrance__line--sub" data-text="RANSOMWARE">RANSOMWARE</span>
   </h1>
-  <p class="entrance__skip">click / scroll / any key to continue</p>
+  <p class="entrance__skip">[ CLICK / SCROLL / ANY KEY TO INITIALIZE INFECTED SYSTEM ]</p>
 </div>
 
 <!-- ============================== HERO ============================== -->
 <header class="hero" id="hero">
   <div class="hero__mask" id="heroMask" aria-hidden="true">
-    <!-- Original abstract mark — a fractured triangular ident, not a
-         reproduction of any copyrighted character design. -->
     <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="maskGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#a8182f" stop-opacity="0.9"/>
-          <stop offset="100%" stop-color="#0a0c10" stop-opacity="0"/>
+          <stop offset="0%" stop-color="#d90429" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#030305" stop-opacity="0"/>
         </linearGradient>
       </defs>
       <g id="maskShards" fill="none" stroke="url(#maskGrad)" stroke-width="1.2">
         <path d="M200 40 L330 300 L200 250 L70 300 Z"/>
         <path d="M200 40 L260 190 L200 250 L140 190 Z"/>
-        <circle cx="160" cy="150" r="4" fill="#a8182f" stroke="none"/>
-        <circle cx="240" cy="150" r="4" fill="#a8182f" stroke="none"/>
-        <path d="M40 60 L120 100" stroke="#232832"/>
-        <path d="M360 60 L280 100" stroke="#232832"/>
-        <path d="M60 340 L150 300" stroke="#232832"/>
-        <path d="M340 340 L250 300" stroke="#232832"/>
+        <circle cx="160" cy="150" r="4" fill="#d90429" stroke="none"/>
+        <circle cx="240" cy="150" r="4" fill="#d90429" stroke="none"/>
+        <path d="M40 60 L120 100" stroke="#1c2029"/>
+        <path d="M360 60 L280 100" stroke="#1c2029"/>
+        <path d="M60 340 L150 300" stroke="#1c2029"/>
+        <path d="M340 340 L250 300" stroke="#1c2029"/>
       </g>
     </svg>
   </div>
 
-  <p class="hero__eyebrow">case #: 59:59-JGSW · status: <span>unresolved</span></p>
+  <p class="hero__eyebrow">case #: 59:59-JGSW · status: <span>unresolved / compromised</span></p>
   <h1 class="hero__title"><span class="glitch" id="heroTitle">JIGSAW RANSOMWARE</span></h1>
   <p class="hero__subtitle">Anatomy of a Ransomware Attack</p>
   <p class="hero__lead">Tracing a suspicious executable from the first clue to the cryptographic key.</p>
 
-  <div class="hero__scroll">SCROLL TO BEGIN</div>
+  <div class="hero__scroll">SCROLL TO BEGIN INVESTIGATION</div>
 </header>
 
 <main>
@@ -445,6 +476,7 @@ Write-Host "[+] Decryption scan completed."</pre>
     <p>Static clues led to behavioral evidence. Behavior led to code. Code revealed the cryptographic mechanism. And the cryptographic mechanism made recovery possible.</p>
   </div>
   <div class="closing__stamp" id="closingStamp">CASE CLOSED</div>
+  <div class="closing__substamp" id="closingSubstamp">BUT THE EVIDENCE REMAINS.</div>
   <p class="closing__meta">Written up as a malware-analysis case study · <a href="#hero">back to top</a></p>
 </section>
 
