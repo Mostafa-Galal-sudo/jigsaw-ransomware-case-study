@@ -1,0 +1,101 @@
+/* JIGSAW CASE STUDY — INTENSIFIED HORROR OVERRIDES */
+:root {
+  --blood: #8f0013;
+  --blood-hot: #ff1237;
+  --rust: #5f1715;
+  --bone: #e2d7c2;
+}
+
+body {
+  background: #050102;
+  color: var(--bone);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .38;
+  background:
+    radial-gradient(ellipse at 50% 0%, transparent 20%, rgba(80,0,8,.36) 75%, rgba(0,0,0,.92) 100%),
+    linear-gradient(90deg, rgba(120,0,12,.08), transparent 18%, transparent 82%, rgba(120,0,12,.08));
+  mix-blend-mode: multiply;
+}
+
+/* Sticky field recorder HUD */
+.horror-hud {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 160;
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: .48rem .7rem;
+  border: 1px solid rgba(255,18,55,.35);
+  background: rgba(8,0,2,.75);
+  color: rgba(226,215,194,.65);
+  font: .62rem/1 var(--f-mono);
+  letter-spacing: .12em;
+  box-shadow: 0 0 25px rgba(143,0,19,.2);
+  backdrop-filter: blur(6px);
+}
+.horror-hud strong { color: var(--blood-hot); font-weight: 500; }
+.horror-hud strong::before { content: "● "; animation: hudBlink 1.1s steps(2) infinite; }
+@keyframes hudBlink { 50% { opacity: .25; } }
+
+.lights-btn {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 160;
+  padding: .55rem .7rem;
+  border: 1px solid rgba(255,18,55,.45);
+  background: rgba(8,0,2,.85);
+  color: rgba(226,215,194,.78);
+  font: .65rem var(--f-mono);
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: .25s ease;
+}
+.lights-btn:hover { color: #fff; border-color: var(--blood-hot); box-shadow: 0 0 18px rgba(255,18,55,.35); }
+body.is-blackout .lights-btn { color: var(--blood-hot); background: #000; }
+body.is-blackout .horror-hud, body.is-blackout .case-thread, body.is-blackout .audio-control-widget { opacity: .22; }
+body.is-blackout main, body.is-blackout .hero { filter: brightness(.38) contrast(1.4) saturate(1.35); }
+body.is-blackout .blood-drips { opacity: .95; }
+
+/* Hand-painted / practical blood illusion: uneven vertical drips and pooled tips. */
+.blood-drips { position: fixed; inset: 0 0 auto; height: 18vh; z-index: 145; pointer-events: none; opacity: .68; filter: drop-shadow(0 2px 4px #000); }
+.blood-drips::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(70,0,8,.72), rgba(120,0,10,.38) 23%, transparent 52%); clip-path: polygon(0 0,100% 0,100% 8%,94% 8%,93% 31%,90% 31%,89% 11%,85% 11%,84% 52%,81% 52%,80% 12%,75% 12%,74% 29%,69% 29%,68% 8%,62% 8%,61% 42%,58% 42%,57% 14%,51% 14%,50% 66%,47% 66%,46% 9%,40% 9%,39% 27%,34% 27%,33% 10%,27% 10%,26% 48%,23% 48%,22% 8%,16% 8%,15% 34%,11% 34%,10% 8%,0 8%); }
+.blood-drips i { position: absolute; top: 4%; width: 3px; height: var(--drip, 7vh); background: linear-gradient(#890013, #ff1237 65%, rgba(255,18,55,.1)); border-radius: 0 0 9px 9px; box-shadow: 0 0 8px rgba(255,18,55,.35); }
+.blood-drips i::after { content: ""; position: absolute; bottom: -5px; left: -3px; width: 9px; height: 9px; border-radius: 50%; background: var(--blood-hot); }
+.blood-drips i:nth-child(1){left:8%;--drip:5vh}.blood-drips i:nth-child(2){left:21%;--drip:11vh}.blood-drips i:nth-child(3){left:43%;--drip:7vh}.blood-drips i:nth-child(4){left:59%;--drip:13vh}.blood-drips i:nth-child(5){left:78%;--drip:6vh}.blood-drips i:nth-child(6){left:92%;--drip:10vh}
+
+.impact-layer { position: fixed; inset: 0; z-index: 140; pointer-events: none; opacity: 0; background: radial-gradient(circle at var(--impact-x,50%) var(--impact-y,50%), rgba(255,10,34,.75), transparent 2%, transparent 18%), radial-gradient(circle at var(--impact-x,50%) var(--impact-y,50%), transparent 5%, rgba(255,10,34,.25) 5.5%, transparent 6%); mix-blend-mode: screen; }
+.impact-layer.is-active { animation: impact 480ms ease-out forwards; }
+@keyframes impact { 0% { opacity: 1; transform: scale(1.03); } 100% { opacity: 0; transform: scale(1); } }
+
+.hero { background-color: #080103; }
+.hero::after { content: ""; position: absolute; inset: 0; pointer-events:none; opacity:.28; background: repeating-linear-gradient(103deg, transparent 0 42px, rgba(255,20,42,.13) 43px, transparent 45px 120px); mix-blend-mode: screen; }
+.hero__warning { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: .7rem; margin-top: 2rem; padding: .65rem .9rem; border: 1px solid rgba(255,18,55,.42); background: rgba(60,0,8,.3); color: var(--blood-hot); font: .7rem var(--f-mono); letter-spacing: .14em; box-shadow: 0 0 25px rgba(143,0,19,.25); }
+.hero__warning b { color: var(--bone); font-weight: 400; opacity: .72; }
+.hero__warning-dot { width: 7px; height: 7px; background: var(--blood-hot); border-radius: 50%; box-shadow: 0 0 10px var(--blood-hot); animation: hudBlink .8s steps(2) infinite; }
+
+.exhibit { background: linear-gradient(90deg, rgba(35,0,5,.3), transparent 30%, transparent 70%, rgba(35,0,5,.22)); }
+.exhibit:nth-child(odd) { background-color: rgba(20,0,3,.28); }
+.exhibit__tag { color: #ff485e; background: rgba(120,0,13,.17); box-shadow: inset 0 0 18px rgba(120,0,13,.18); }
+.evidence, .terminal, .ransom-panel, .file-demo, .key-reveal { box-shadow: 0 18px 45px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,18,55,.06); }
+.evidence:hover { transform: translateY(-5px) rotate(-.2deg); }
+
+@media (max-width: 700px) {
+  .horror-hud { top: .6rem; right: .6rem; font-size: .52rem; }
+  .horror-hud span { display: none; }
+  .lights-btn { right: .6rem; bottom: .65rem; }
+  .hero__warning { flex-wrap: wrap; justify-content: center; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blood-drips i, .horror-hud strong::before, .hero__warning-dot { animation: none; }
+}

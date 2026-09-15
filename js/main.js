@@ -7,6 +7,30 @@
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ------------------------------------------------------------------ *
+   * 0A. Practical horror controls — blackout + impact burst
+   * ------------------------------------------------------------------ */
+  var lightsBtn = document.getElementById("lightsBtn");
+  var impactLayer = document.getElementById("impactLayer");
+  var hudStatus = document.getElementById("hudStatus");
+  if (lightsBtn) {
+    lightsBtn.addEventListener("click", function () {
+      var blackout = document.body.classList.toggle("is-blackout");
+      lightsBtn.setAttribute("aria-pressed", String(blackout));
+      lightsBtn.textContent = blackout ? "RESTORE THE LIGHTS" : "CUT THE LIGHTS";
+      if (hudStatus) hudStatus.textContent = blackout ? "BLACKOUT" : "OBSERVING";
+      if (blackout) triggerImpact(window.innerWidth * .5, window.innerHeight * .35);
+    });
+  }
+  function triggerImpact(x, y) {
+    if (!impactLayer || reduceMotion) return;
+    impactLayer.style.setProperty("--impact-x", x + "px");
+    impactLayer.style.setProperty("--impact-y", y + "px");
+    impactLayer.classList.remove("is-active");
+    void impactLayer.offsetWidth;
+    impactLayer.classList.add("is-active");
+  }
+
+  /* ------------------------------------------------------------------ *
    * 0. Audio Manager & Sound System
    * ------------------------------------------------------------------ */
   var audioEnabled = false;
@@ -95,6 +119,7 @@
         redFlashOverlay.classList.remove("is-flashing");
       }, 150 + Math.random() * 150);
     }
+    triggerImpact(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
   }
 
   /* ------------------------------------------------------------------ *
